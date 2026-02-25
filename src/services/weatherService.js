@@ -9,12 +9,19 @@ export async function fetchWeather(query) {
     query
   )}&aqi=no`;
 
+  console.log("Fetching weather data from:", url);
+
   const res = await fetch(url);
+
+  console.log("API response status:", res.status, "Status text:", res.statusText);
 
   if (!res.ok) {
     throw new Error("City not found");
   }
 
   const data = await res.json();
+
+  console.log("Fetched weather data received:", data);
+
   return data;
 }

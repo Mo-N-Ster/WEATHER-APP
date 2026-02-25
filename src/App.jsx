@@ -90,11 +90,12 @@ export default function App() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs text-slate-300"> {/* local time */}
+                  <p className="text-xs font-semibold text-slate-300"> {/* local time */}
                     {weather.location.localtime}
                   </p>
                   <p className="text-xs text-slate-400"> {/* updated time */}
-                    {weather.current.last_updated}
+                     Last updated : 
+                    <p className="text-xs text-slate-300">{weather.current.last_updated}</p>
                   </p>
                 </div>
               </div>
@@ -145,7 +146,7 @@ export default function App() {
             </>
           ) : (
             <p className="text-sm text-slate-400">
-              Cerca una città per vedere il meteo.
+              search for city to see the weather
             </p>
           )}
 
