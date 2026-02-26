@@ -1,13 +1,17 @@
 import { useState } from "react";
 import { fetchWeather } from "./services/weatherService";
+import { searchCities } from "./services/searchService";
+
 
 export default function App() {
   const [query, setQuery] = useState("");
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
 
-  const handlesearch = async () => {
+
+  const handleSearch = async () => {
     if (!query) {
       console.log("No city name entered");
       setError("Please enter a city name");
@@ -33,45 +37,71 @@ export default function App() {
   };
 
 
+const handleInputChange = async (value) => { 
+  setQuery(value); 
+  console.log("✏️ Digited:", value); 
+  
+  if (value.length >= 2) { 
+    const results = await searchCities(value); 
+    console.log("📦 Suggerimenti trovati:", results); 
+    setSuggestions(results); 
+  } else { 
+    setSuggestions([]); 
+  } 
+}; 
+
+const handleSuggestionClick = (city) => { 
+  console.log("👉 Cliccato suggerimento:", city.name); 
+  setQuery(city.name); 
+  setSuggestions([]); 
+  handleSearch(); 
+};  
+
   
   return (
     <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
       <div className="w-full max-w-md px-4">
 
+
         {/* Search bar */}
-          <div className="flex items-center gap-2 mb-4">
-            <input 
-              type="text" 
-              placeholder="Search city..." 
-              value={query} 
-              onChange={(e) => setQuery(e.target.value)}
+        <div className="relative mb-4">
+          <div className="flex items-center gap-2">
+            <input type="text" placeholder="Search city..." value={query} onChange={(e) => handleInputChange(e.target.value)}
               className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  console.log("Searching for:",query);
-                  handlesearch(); // Chiamata API per cercare la città
+                  console.log("⏎ Enter premuto, lancio ricerca");
+                  handleSearch();
                 }
               }}
             />
-          <button 
-            className="bg-blue-500 hover:bg-blue-600 transition text-sm px-4 py-2 rounded-xl"
-            onClick={() => {
-              console.log("Searching for:",query);
-              handlesearch(); // Chiamata API per cercare la città
-            }}  
-          >
-            Search
-          </button>
+
+            <button className="bg-blue-500 hover:bg-blue-600 transition text-sm px-4 py-2 rounded-xl" onClick={() => {
+                console.log("🖱 Click su Search");
+                handleSearch();
+              }}
+            >
+              Search
+            </button>
+          </div>
+
+          {/* Autocomplete dropdown */}
+          {suggestions.length > 0 && (
+            <ul className="absolute z-10 w-full bg-slate-800 border border-slate-700 rounded-xl mt-1 max-h-48 overflow-y-auto">
+              {suggestions.map((city) => (
+                <li key={city.id} className="px-3 py-2 hover:bg-slate-700 cursor-pointer" onClick={() => handleSuggestionClick(city)}
+                >
+                  {city.name}, {city.region}, {city.country}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
-      {/* Stato di caricamento / errore */}
-      {loading && (
-        <p className="text-center text-slate-300">Loading...</p>
-      )}
-      {error && (
-        <p className="text-center text-red-400">{error}</p>
-      )}  
+        {/* Loading / Error */}
+        {loading && <p className="text-center text-slate-300">Loading...</p>}
+        {error && <p className="text-center text-red-400">{error}</p>}
+
        
         {/* Weather card */}
         <div className="bg-slate-800 rounded-2xl p-4 shadow-lg">
@@ -95,7 +125,9 @@ export default function App() {
                   </p>
                   <p className="text-xs text-slate-400"> {/* updated time */}
                      Last updated : 
-                    <p className="text-xs text-slate-300">{weather.current.last_updated}</p>
+                    <span className="text-xs text-slate-300 ml-1">
+                      {weather.current.last_updated}
+                    </span>
                   </p>
                 </div>
               </div>
