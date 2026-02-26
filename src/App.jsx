@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchWeather } from "./services/weatherService";
 import { searchCities } from "./services/searchService";
+
+import { loadRecentSearches, saveRecentSearches, addRecentSearch, } from "./utils/recentSearches";
 
 
 export default function App() {
@@ -9,6 +11,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]); 
+  
+  useEffect(() => { 
+    const initial = loadRecentSearches(); 
+    console.log("💾 Loaded recent searches:", initial); 
+    setRecentSearches(initial);
+  }, []);
 
 
   const handleSearch = async () => {
@@ -26,6 +35,15 @@ export default function App() {
       const data = await fetchWeather(query);
       console.log("Weather data fetched:", data);
       setWeather(data);
+
+      const cityName = data.location.name; 
+      setRecentSearches((prev) => { 
+        const updated = addRecentSearch(prev, cityName, 5); 
+        console.log("💾 Updated recent searches:", updated); 
+        saveRecentSearches(updated); 
+        return updated;
+      });
+      
     } catch (error) {
       console.error("Error fetching weather data:", error);
       setError(error.message || "An error occurred while fetching weather data");
@@ -97,6 +115,29 @@ const handleSuggestionClick = (city) => {
             </ul>
           )}
         </div>
+
+
+        {recentSearches.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs text-slate-400 mb-1">Recent searches:</p>
+            <div className="flex flex-wrap gap-2">
+              {recentSearches.map((city) => (
+                <button
+                  key={city}
+                  className="text-xs bg-slate-800 border border-slate-700 rounded-full px-3 py-1 hover:bg-slate-700"
+                  onClick={() => {
+                    console.log("🕘 Click on recent search:", city);
+                    setQuery(city);
+                    handleSearch();
+                  }}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
 
         {/* Loading / Error */}
         {loading && <p className="text-center text-slate-300">Loading...</p>}
