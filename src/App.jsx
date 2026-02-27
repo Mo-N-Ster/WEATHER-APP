@@ -3,6 +3,7 @@ import { fetchWeather } from "./services/weatherService";
 import { searchCities } from "./services/searchService";
 
 import { loadRecentSearches, saveRecentSearches, addRecentSearch, } from "./utils/recentSearches";
+import { getThemeClasses } from "./utils/theme";
 
 
 export default function App() {
@@ -12,7 +13,8 @@ export default function App() {
   const [error, setError] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]); 
-  
+  const themeClasses = getThemeClasses(weather);
+
   useEffect(() => { 
     const initial = loadRecentSearches(); 
     console.log("💾 Loaded recent searches:", initial); 
@@ -77,7 +79,7 @@ const handleSuggestionClick = (city) => {
 
   
   return (
-    <div className="min-h-screen bg-slate-900 text-white flex items-center justify-center">
+    <div className={`min-h-screen flex items-center justify-center ${themeClasses}`}> 
       <div className="w-full max-w-md px-4">
 
 
