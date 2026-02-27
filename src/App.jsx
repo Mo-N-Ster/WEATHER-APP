@@ -4,6 +4,10 @@ import { searchCities } from "./services/searchService";
 
 import { loadRecentSearches, saveRecentSearches, addRecentSearch, } from "./utils/recentSearches";
 import { getThemeClasses } from "./utils/theme";
+import { fetchForecast } from "./services/forecastService";
+
+import { HourlyTemperatureChart } from "./components/HourlyTemperatureChart";
+import { DailyTemperatureChart } from "./components/DailyTemperatureChart";
 
 
 export default function App() {
@@ -14,6 +18,8 @@ export default function App() {
   const [suggestions, setSuggestions] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]); 
   const themeClasses = getThemeClasses(weather);
+  const [forecast, setForecast] = useState(null);
+
 
   useEffect(() => { 
     const initial = loadRecentSearches(); 
@@ -45,11 +51,16 @@ export default function App() {
         saveRecentSearches(updated); 
         return updated;
       });
+
+      const forecastData = await fetchForecast(query); 
+      console.log("📈 Forecast data fetched:", forecastData); 
+      setForecast(forecastData);
       
     } catch (error) {
       console.error("Error fetching weather data:", error);
       setError(error.message || "An error occurred while fetching weather data");
       setWeather(null);
+      setForecast(null);
     } finally {
       setLoading(false);
       console.log("Search completed");
@@ -227,6 +238,16 @@ const handleSuggestionClick = (city) => {
 
 
         </div>
+
+
+        {forecast && (
+          <>
+            <HourlyTemperatureChart forecast={forecast} />
+            <DailyTemperatureChart forecast={forecast} />
+          </>
+        )}
+
+
 
       </div>
     </div>
