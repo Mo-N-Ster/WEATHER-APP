@@ -5,6 +5,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
 
 export function DailyTemperatureChart({ forecast }) {
@@ -22,9 +23,23 @@ export function DailyTemperatureChart({ forecast }) {
       <div className="h-48">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={days}>
-            <XAxis dataKey="date" tick={{ fontSize: 10 }} />
-            <YAxis tick={{ fontSize: 10 }} />
-            <Tooltip />
+            <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+            
+            <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#ffffff" }} />
+            <YAxis tick={{ fontSize: 10, fill: "#ffffff" }} />
+
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#000000",
+                borderRadius: "12px",
+                border: "none",
+                color: "#ffffff",
+              }}
+              labelStyle={{ color: "#ffffff" }}
+              itemStyle={{ color: "#ffffff" }}
+              cursor={{ stroke: "#38bdf8", strokeWidth: 1 }}
+            />
+
             <Line
               type="monotone"
               dataKey="min"
