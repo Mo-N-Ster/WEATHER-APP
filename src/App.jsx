@@ -1,5 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { fetchWeather } from "./services/weatherService";
+
+import { fetchIpLocation } from "./services/ipLocationService";
+
+
 
 export default function App() {
   const [query, setQuery] = useState("");
@@ -7,29 +11,67 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handlesearch = async () => {
-    if (!query) {
-      console.log("No city name entered");
+  const [initializing, setInitializing] = useState(true);
+
+
+  useEffect(() => {
+    const initFromIp = async () => {
+      try {
+        console.log("🚀 Init from IP location...");
+        const ipData = await fetchIpLocation();
+        const city = ipData.city || ipData.region || ipData.country_name;
+        console.log("📍 Detected city from IP:", city);
+
+        if (city) {
+          setQuery(city);
+          // usa la tua handleSearch esistente
+          await handleSearchWithCity(city);
+        }
+      } catch (err) {
+        console.error("❌ Error during IP init:", err);
+      } finally {
+        setInitializing(false);
+      }
+    };
+
+    initFromIp();
+  }, []);
+
+
+
+  const handleSearchWithCity = async (city) => {
+    if (!city) {
+      console.log("No city name provided to handleSearchWithCity");
       setError("Please enter a city name");
       setWeather(null);
       return;
     }
 
+    console.log("🔎 Searching weather for:", city);
     setLoading(true);
     setError(null);
 
     try {
-      const data = await fetchWeather(query);
-      console.log("Weather data fetched:", data);
+      const data = await fetchWeather(city);
+      console.log("🌤️ Weather data fetched:", data);
       setWeather(data);
+
+      // se usi anche forecast:
+      // const forecastData = await fetchForecast(city);
+      // setForecast(forecastData);
+
     } catch (error) {
-      console.error("Error fetching weather data:", error);
+      console.error("❌ Error fetching weather data:", error);
       setError(error.message || "An error occurred while fetching weather data");
       setWeather(null);
     } finally {
       setLoading(false);
-      console.log("Search completed");
+      console.log("⏹ Search completed for:", city);
     }
+  };
+
+  const handlesearch = async () => {
+    await handleSearchWithCity(query);
   };
 
 
@@ -64,6 +106,14 @@ export default function App() {
             Search
           </button>
         </div>
+
+
+      {initializing && (
+        <p className="text-center text-slate-300 mb-2">
+          Detecting your location...
+        </p>
+      )}
+
 
       {/* Stato di caricamento / errore */}
       {loading && (
@@ -158,4 +208,3 @@ export default function App() {
   );
 
 }
-
